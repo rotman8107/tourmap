@@ -1,0 +1,139 @@
+<!DOCTYPE hmtl>
+<html>
+<head>
+	<title>World Tourists Map</title>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.3.1/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet@1.3.1/dist/leaflet.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+        }
+        html, body, #map {
+            height: 100%;
+            width: 100%;
+        }
+		.leaflet-popup-content-wrapper {
+		background-color: #cc99ff;
+		color: #000000;
+		font-size: 13.5px;
+		text-align: center;
+		border-radius: 150px/26px;
+		background: radial-gradient(#f2e6d9, #86592d);
+		}
+
+		p{
+		font-size: 14px;
+		line-height: 18px;
+		}
+		h5 {
+		line-height: 0px;
+		text-align: center;
+		}
+		.legend {
+	        padding: 10px 10px;
+	        background-color: #3a3a78;
+	        box-shadow: 0 0 15px rgba(0,0,0,0.2);
+	        border-radius: 11px;
+			font-size: 12px;
+			border: 2.5px solid grey;
+			line-height: 20px;
+			color: #ffffcc;
+			font-family: 'Open Sans', Helvetica, sans-serif;
+			opacity: 0.91;
+        }
+        .legend i {
+	        width: 15px;
+	        height: 15px;
+			float: left;
+			opacity: 0.7;
+			
+        }
+		div {
+		text-align: center;
+		}
+		hr{
+		margin: 1;
+		border-style: ridge;
+		border-color: #669999;
+		border-width: 1.5px;
+		}
+		
+		
+    </style>
+</head>
+
+<body>
+<div id="map"></div>
+</div>
+	<script>
+	//adding open street map tile layer to the web page:
+	var map = L.map("map").setView([25, 0], 3)
+	L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain-background/{z}/{x}/{y}.{ext}', {
+	attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+	subdomains: 'abcd',
+	minZoom: 0,
+	maxZoom: 18,
+	ext: 'png'
+}).addTo(map);
+	
+	//A popup code that displays the name of the country, its capital, and the number of tourists who visited it in 2016:
+	var geojson;
+	
+		$.getJSON("Tourists.geojson", function(data) {
+		geojson = L.geoJSON(data, {
+			onEachFeature: function(feature, layer) {
+		    layer.bindPopup(
+		        '<div class="popup">' +
+				'<img src="../flags/' + feature.properties.NAME + '.png"/>' + '<br>' +
+				'<b>Country: ' + feature.properties.NAME + "<br>" +
+		        'Capital: ' + feature.properties.Capital + "<br>" + 
+		        '<span class="glyphicon">&#xe139;</span> '+'Tourists: ' + feature.properties.Touristsfield_2 + "</b></div>" + 
+				'<b>' + "<a target='_blank' href='https://en.wikipedia.org/wiki/" + feature.properties.NAME + "'>Country Wiki Link </a>"
+		    );
+        }, style: style}).addTo(map);
+});
+
+
+//getColor function - the function that makes the symbology on the map:  
+function getColor(d) {
+    if(d > 11000000) return "#575d56"; else
+    if(d > 3000000) return "#8c735a"; else
+    if(d > 1000000) return "#bd9975"; else
+    if(d > 250000) return "#eed6be"; else 
+        return "#f6f0ea";
+}
+//getColor style function: 
+function style(feature) {
+    return {
+        fillColor: getColor(feature.properties.Touristsfield_2),
+        weight: 1.35,
+        opacity: 1,
+        color: "#454521",
+        fillOpacity: 0.84
+    };
+}
+
+//the legend and description creation - with the map title, colors and values, description for the users and the data source:  
+var legend = L.control({position: "bottomright"});
+legend.onAdd = function(map) {
+    var div = L.DomUtil.create("div", "legend");        
+    div.innerHTML = '\
+	<h4><b>Interactive Tourist Map</b></h4><hr>\
+        <p>By clicking on each country,<br>you will get the number of tourists<br> who visited it in 2016</p><hr>\
+		<h5><u><b>Tourists Number:</u></b></h5>\
+        <i style="background-color: #575d56"></i>more than 11,000,000<br>\
+        <i style="background-color: #8c735a"></i>3,000,000 - 11,000,000<br>\
+        <i style="background-color: #bd9975"></i>1,000,000 - 3,000,000<br>\
+        <i style="background-color: #eed6be"></i>250,000 - 1,000,000<br>\
+        <i style="background-color: #f6f0ea"></i>0 - 250,000<hr>\
+		<u>Data Source</u>:<br> <img src="world_bank.jpg" style=";width:130px;height:60px;">\
+    '
+    return div;
+};legend.addTo(map);
+
+	</script>
+</body>
+</html>
